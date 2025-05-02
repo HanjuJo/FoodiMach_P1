@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/FoodiMach_P1/static/css/main.722eafe8.css",
-    "main.js": "/FoodiMach_P1/static/js/main.b4033b14.js",
+    "main.js": "/FoodiMach_P1/static/js/main.485b7f45.js",
     "static/js/488.e75445ad.chunk.js": "/FoodiMach_P1/static/js/488.e75445ad.chunk.js",
     "service-worker.js": "/FoodiMach_P1/service-worker.js",
     "index.html": "/FoodiMach_P1/index.html",
     "main.722eafe8.css.map": "/FoodiMach_P1/static/css/main.722eafe8.css.map",
-    "main.b4033b14.js.map": "/FoodiMach_P1/static/js/main.b4033b14.js.map",
+    "main.485b7f45.js.map": "/FoodiMach_P1/static/js/main.485b7f45.js.map",
     "488.e75445ad.chunk.js.map": "/FoodiMach_P1/static/js/488.e75445ad.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.722eafe8.css",
-    "static/js/main.b4033b14.js"
+    "static/js/main.485b7f45.js"
   ]
 }

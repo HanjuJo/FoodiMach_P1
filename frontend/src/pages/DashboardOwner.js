@@ -4,6 +4,8 @@ import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { Container, Card, Button, Row, Col, Form } from "react-bootstrap";
 
+
+
 export default function DashboardOwner() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -50,6 +52,7 @@ export default function DashboardOwner() {
 
   return (
     <Container className="py-5">
+
       <Card className="shadow-lg border-0 rounded-4 p-4" style={{ background: "#fffdf7" }}>
         <h3 className="mb-4 text-warning">{data.shopName} 대시보드</h3>
         <Row className="mb-3">

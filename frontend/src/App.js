@@ -11,10 +11,12 @@ import InfluencerDashboard from "./pages/InfluencerDashboard";
 import EditInfluencer from "./pages/EditInfluencer";
 import InfluencerSearch from "./pages/InfluencerSearch";
 import BusinessSearch from "./pages/BusinessSearch";
+import RoleBasedNavbar from "./components/RoleBasedNavbar";
 
 function App() {
   return (
     <Router>
+         <RoleBasedNavbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

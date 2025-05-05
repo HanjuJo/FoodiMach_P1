@@ -1,0 +1,80 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="false" level="TYPO" enabled_by_default="false">
+      <option name="ignoredPackages">
+        <value>
+          <list size="1">
+            <item index="0" class="java.lang.String" itemvalue="vtk" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8Inspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="E303" />
+          <option value="E501" />
+          <option value="E305" />
+          <option value="E111" />
+          <option value="E117" />
+          <option value="E302" />
+          <option value="E301" />
+          <option value="E122" />
+          <option value="W292" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="N802" />
+          <option value="N806" />
+          <option value="N801" />
+          <option value="N803" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="requests" />
+          <option value="Iptracer.iptracer_chart" />
+          <option value="iptracer_chart.epics" />
+          <option value="iptracer_chart.qwt" />
+          <option value="iptracer_chart.PyQt5" />
+          <option value="iptracer.*" />
+          <option value="Chapter03.CallMainWinSignalSlog02.MainWinSignalSlog02" />
+          <option value="test.main.ui_main" />
+          <option value="test.main.ui_functions" />
+          <option value="test.ui_functions" />
+          <option value="vtk.vtkOutlineFilter" />
+          <option value="QtProject.UnityServer_test01.main.main.mainwindow" />
+          <option value="QtProject.UnityServer_test01.main.mainwindow.server" />
+          <option value="main.main.mainwindow" />
+          <option value="Animated_3D" />
+          <option value="main.mainwindow.server" />
+          <option value="main.mainwindow.loadUi" />
+          <option value="main.mainwindow.mainwindow_ui" />
+          <option value="main.visualizer" />
+          <option value="main.Animated_3D.form_class" />
+          <option value="main.main.mainPage" />
+          <option value="main.mainPage.mainwindow.serverPage" />
+          <option value="main.mainPage.mainwindow.seconPages" />
+          <option value="main.mainPage.mainwindow.modelPage" />
+          <option value="main.mainPage.mainwindow.*" />
+          <option value="PyQt5.uic" />
+          <option value="main.seconPages.Range_of_axes.*" />
+          <option value="QtProject.UnityServer_test01.main.main.mainPage" />
+          <option value="QtProject.UnityServer_test01.main.mainPage.mainwindow.seconPages" />
+          <option value="main.secondPages.Animated_3D.Mainwindow" />
+          <option value="main.*" />
+          <option value="UnityServer_python.main.main.mainPage" />
+          <option value="JsonParser" />
+          <option value="JsonObject" />
+          <option value="ui.ui_animated_3D.*" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

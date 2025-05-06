@@ -1,12 +1,13 @@
-// src/pages/BusinessSearch.js
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { db } from "../firebaseConfig";
+import { useLocation, useNavigate } from "react-router-dom";
+import { db, auth } from "../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function BusinessSearch() {
   const location = useLocation();
+  const navigate = useNavigate();
   const initialRegion = location.state?.region || "";
   const initialCategory = location.state?.category || "";
 
@@ -16,6 +17,34 @@ export default function BusinessSearch() {
   });
 
   const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate("/login");
+      }
+    });
+
+    const handleSearch = async () => {
+      let q = collection(db, "owners");
+      const conditions = [];
+
+      if (filters.region) {
+        conditions.push(where("address", ">=", filters.region));
+      }
+      if (filters.category) {
+        conditions.push(where("category", "==", filters.category));
+      }
+
+      const filteredQuery = conditions.length > 0 ? query(q, ...conditions) : q;
+      const snapshot = await getDocs(filteredQuery);
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setResults(data);
+    };
+
+    handleSearch();
+    return () => unsubscribe();
+  }, [filters, navigate]);
 
   const handleChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
@@ -38,13 +67,9 @@ export default function BusinessSearch() {
     setResults(data);
   };
 
-  useEffect(() => {
-    handleSearch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <Container className="py-4">
+    <p className="mt-5"></p>
       <h4>🏪 사업장 조건 검색</h4>
       <Form className="mb-4">
         <Row>

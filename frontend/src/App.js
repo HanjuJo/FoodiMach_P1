@@ -17,6 +17,7 @@ function App() {
   return (
     <Router>
          <RoleBasedNavbar />
+         <p></p>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

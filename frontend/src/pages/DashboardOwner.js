@@ -1,21 +1,31 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { db, auth } from "../firebaseConfig";
 import { Container, Card, Button, Row, Col, Form } from "react-bootstrap";
-
-
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function DashboardOwner() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
 
-  // 매칭 조건 상태
   const [platform, setPlatform] = useState("");
   const [region, setRegion] = useState("");
   const [followers, setFollowers] = useState("");
 
+  // 🔐 로그인 상태 확인
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        alert("로그인이 필요합니다.");
+        navigate("/login", { replace: true });
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
+
+  // 사용자 데이터 가져오기
   useEffect(() => {
     async function fetchData() {
       const docRef = doc(db, "owners", id);
@@ -52,7 +62,6 @@ export default function DashboardOwner() {
 
   return (
     <Container className="py-5">
-
       <Card className="shadow-lg border-0 rounded-4 p-4" style={{ background: "#fffdf7" }}>
         <h3 className="mb-4 text-warning">{data.shopName} 대시보드</h3>
         <Row className="mb-3">

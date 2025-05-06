@@ -1,64 +1,77 @@
-// src/components/RoleBasedNavbar.js
-import { Navbar, Nav, Container } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db } from "../firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
 
-export default function RoleBasedNavbar() {
-  const [role, setRole] = useState(null);
+function Navbar() {
+  const [userInfo, setUserInfo] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) return;
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const uid = user.uid;
 
-    const fetchRole = async () => {
-      const docRef = doc(db, "users", user.uid);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        setRole(snap.data().role);
+        // role 확인
+        const ownerSnap = await getDoc(doc(db, "owners", uid));
+        const influencerSnap = await getDoc(doc(db, "users", uid));
+
+        if (ownerSnap.exists()) {
+          setUserInfo({ uid, role: "owner" });
+        } else if (influencerSnap.exists()) {
+          setUserInfo({ uid, role: "influencer" });
+        }
+      } else {
+        setUserInfo(null);
       }
-    };
-    fetchRole();
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleLogout = async () => {
-    await auth.signOut();
-    navigate("/");
+    await signOut(auth);
+    setUserInfo(null);
+    sessionStorage.clear(); // 혹은 localStorage.clear();
+    navigate("/", { replace: true }); // 뒤로가기 시 로그인 페이지 유지
   };
 
   return (
-    <Navbar bg="warning" variant="light" expand="lg" fixed="top" className="shadow-sm">
-      <Container>
-        <Navbar.Brand
-          href="/"
-          className="fw-bold"
-          style={{ fontFamily: "Pretendard, sans-serif", fontSize: "20px" }}
-        >
-          🍽️ 푸디매치
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse>
-          <Nav className="me-auto">
-            {role === "owner" && (
-              <>
-                <Nav.Link href="/owner-list">📃 인플루언서 리스트</Nav.Link>
-                <Nav.Link href={`/dashboard/${auth.currentUser?.uid}`}>📊 내 대시보드</Nav.Link>
-              </>
-            )}
-            {role === "influencer" && (
-              <>
-                <Nav.Link href="/business-list">🏪 사업장 리스트</Nav.Link>
-                <Nav.Link href={`/dashboard-influencer/${auth.currentUser?.uid}`}>📊 내 대시보드</Nav.Link>
-              </>
-            )}
-          </Nav>
-          <Nav>
-            <Nav.Link onClick={handleLogout}>🚪 로그아웃</Nav.Link>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+    <nav className="navbar navbar-expand-lg bg-light fixed-top shadow-sm">
+      <div className="container">
+        <a className="navbar-brand" href="/">푸디매치</a>
+        <div className="d-flex">
+          {userInfo ? (
+            <>
+              <button
+                className="btn btn-outline-primary me-2"
+                onClick={() => {
+                  const dashboardPath =
+                    userInfo.role === "owner"
+                      ? `/dashboard/${userInfo.uid}`
+                      : `/dashboard-influencer/${userInfo.uid}`;
+                  navigate(dashboardPath);
+                }}
+              >
+                MyPage
+              </button>
+              <button className="btn btn-outline-danger" onClick={handleLogout}>
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <button
+              className="btn btn-success"
+              onClick={() => navigate("/login")}
+            >
+              로그인
+            </button>
+          )}
+        </div>
+      </div>
+    </nav>
   );
 }
+
+export default Navbar;

@@ -47,8 +47,8 @@ export default function RegisterOwner() {
         createdAt: new Date(),
       });
 
-      alert("🎉 회원가입 완료! 대시보드로 이동합니다");
-      navigate(`/dashboard/${user.uid}`);
+      alert("🎉 회원가입 완료! 로그인 후 대시보드로 이동하세요.");
+      navigate("/login");
     } catch (error) {
       console.error("가입 오류:", error);
       alert("❌ 가입 실패: " + error.message);
@@ -57,6 +57,7 @@ export default function RegisterOwner() {
 
   return (
     <Container className="mt-5" style={{ maxWidth: "600px" }}>
+       <br/>
       <h3 className="mb-4">🍜 사장님 회원가입</h3>
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3" controlId="email">

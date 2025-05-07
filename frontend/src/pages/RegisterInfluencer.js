@@ -48,6 +48,7 @@ export default function RegisterInfluencer() {
 
   return (
     <Container className="mt-5" style={{ maxWidth: "600px" }}>
+    <br></br>
       <h3 className="mb-4">🎥 인플루언서 회원가입</h3>
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">

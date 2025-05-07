@@ -84,7 +84,7 @@ export default function BusinessSearch() {
           <Col md={5}>
             <Form.Control
               name="category"
-              placeholder="업종 (예: 고깃집)"
+              placeholder="업종 (예: 한식, 중식..)"
               value={filters.category}
               onChange={handleChange}
             />

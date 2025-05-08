@@ -1,10 +1,12 @@
 // src/pages/DashboardOwner.js
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, deleteDoc, collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import {
+  doc, getDoc, deleteDoc, collection,
+  query, where, getDocs, addDoc
+} from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { Container, Card, Button, Row, Col, Form } from "react-bootstrap";
-import BidProposalModal from "./BidProposalModal";
 
 export default function DashboardOwner() {
   const { id } = useParams();
@@ -14,8 +16,6 @@ export default function DashboardOwner() {
   const [region, setRegion] = useState("");
   const [followers, setFollowers] = useState("");
   const [influencers, setInfluencers] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedInfluencer, setSelectedInfluencer] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -43,12 +43,10 @@ export default function DashboardOwner() {
 
   const handleSearchInfluencers = async () => {
     let q = query(collection(db, "users"), where("role", "==", "influencer"));
-
     const conditions = [];
     if (platform) conditions.push(where("platform", "==", platform));
     if (region) conditions.push(where("region", "==", region));
     if (followers) conditions.push(where("followerCount", ">=", parseInt(followers)));
-
     if (conditions.length > 0) {
       q = query(collection(db, "users"), where("role", "==", "influencer"), ...conditions);
     }
@@ -58,26 +56,21 @@ export default function DashboardOwner() {
     setInfluencers(result);
   };
 
-  const openProposalModal = (influencer) => {
-    setSelectedInfluencer(influencer);
-    setShowModal(true);
-  };
-
-  const handleSubmitProposal = async (form) => {
-    if (!selectedInfluencer) return;
-
-    await addDoc(collection(db, "bids"), {
-      ownerId: id,
-      influencerId: selectedInfluencer.id,
-      influencerName: selectedInfluencer.influencerName,
-      message: form.message,
-      budget: form.budget,
-      duration: form.duration,
-      status: "제안됨",
-      createdAt: new Date(),
-    });
-
-    alert("입찰 제안이 전송되었습니다.");
+  const handleRegisterInterest = async (influencer) => {
+    try {
+      await addDoc(collection(db, "interestedInfluencers"), {
+        ownerId: id,
+        influencerId: influencer.id,
+        influencerName: influencer.influencerName,
+        platform: influencer.platform,
+        region: influencer.region,
+        followerCount: influencer.followerCount,
+        createdAt: new Date()
+      });
+      alert(`'${influencer.influencerName}' 님을 매칭 희망 인플루언서로 등록했습니다.`);
+    } catch (err) {
+      alert("등록 실패: " + err.message);
+    }
   };
 
   if (!data) return <div className="text-center mt-5">불러오는 중...</div>;
@@ -148,7 +141,7 @@ export default function DashboardOwner() {
 
       {influencers.length > 0 && (
         <Card className="mt-4 p-4 shadow-sm border-0 rounded-4">
-          <h5 className="mb-3 fw-bold">🎯 추천 인플루언서</h5>
+          <h5 className="mb-3 fw-bold">🎯 매칭 희망 인플루언서 등록</h5>
           <Row>
             {influencers.map((inf) => (
               <Col md={4} key={inf.id} className="mb-3">
@@ -161,8 +154,8 @@ export default function DashboardOwner() {
                       지역: {inf.region || "미입력"} <br />
                       소개: {inf.introduction}
                     </Card.Text>
-                    <Button variant="outline-primary" onClick={() => openProposalModal(inf)}>
-                      입찰 제안 💌
+                    <Button variant="outline-success" onClick={() => handleRegisterInterest(inf)}>
+                      매칭 희망 등록 ✅
                     </Button>
                   </Card.Body>
                 </Card>
@@ -171,12 +164,6 @@ export default function DashboardOwner() {
           </Row>
         </Card>
       )}
-
-      <BidProposalModal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        onSubmit={handleSubmitProposal}
-      />
     </Container>
   );
 }

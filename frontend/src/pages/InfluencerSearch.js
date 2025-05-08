@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
 import { Container, Form, Button, Row, Col, Card } from "react-bootstrap";
 
 export default function InfluencerSearch() {
   const location = useLocation();
-  const initFilters = location.state || {};
-
+  const filtersFromState = location.state || {};
   const [filters, setFilters] = useState({
-    platform: initFilters.platform || "",
-    followerCount: initFilters.followers || "",
-    region: initFilters.region || "",
+    platform: filtersFromState.platform || "",
+    followerCount: filtersFromState.followers || "",
+    region: filtersFromState.region || "",
   });
 
   const [results, setResults] = useState([]);
+  const ownerId = localStorage.getItem("uid"); // 🔐 현재 사장님 UID 저장된 로컬 값 사용
 
   const handleChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
@@ -22,7 +22,7 @@ export default function InfluencerSearch() {
 
   const handleSearch = async () => {
     let q = collection(db, "users");
-    let conditions = [where("role", "==", "influencer")];
+    const conditions = [where("role", "==", "influencer")];
 
     if (filters.platform) {
       conditions.push(where("platform", "==", filters.platform));
@@ -40,27 +40,45 @@ export default function InfluencerSearch() {
     setResults(data);
   };
 
-  // 🔥 최초 진입 시 전달된 조건이 있으면 자동 검색
-  useEffect(() => {
-    if (initFilters.platform || initFilters.followers || initFilters.region) {
-      handleSearch();
+  const handleMatch = async (influencer) => {
+    if (!ownerId) {
+      alert("사장님 정보가 없습니다. 다시 로그인 해주세요.");
+      return;
     }
+
+    try {
+      await addDoc(collection(db, "matchedInfluencers"), {
+        ownerId,
+        influencerId: influencer.id,
+        influencerName: influencer.influencerName,
+        platform: influencer.platform,
+        followerCount: influencer.followerCount,
+        region: influencer.region || "",
+        timestamp: new Date(),
+      });
+      alert("✅ 매칭 희망 인플루언서로 등록되었습니다!");
+    } catch (error) {
+      console.error("매칭 등록 오류:", error);
+      alert("❌ 등록 실패: " + error.message);
+    }
+  };
+
+  useEffect(() => {
+    handleSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <Container className="py-4">
-    <br></br>
       <h4>🎯 인플루언서 조건 검색</h4>
       <Form className="mb-4">
         <Row>
           <Col md={3}>
-            <Form.Select name="platform" value={filters.platform} onChange={handleChange}>
+            <Form.Select name="platform" onChange={handleChange} value={filters.platform}>
               <option value="">SNS 플랫폼</option>
               <option value="인스타그램">인스타그램</option>
               <option value="유튜브">유튜브</option>
               <option value="틱톡">틱톡</option>
-
             </Form.Select>
           </Col>
           <Col md={3}>
@@ -100,6 +118,12 @@ export default function InfluencerSearch() {
                   지역: {influencer.region || "미입력"} <br />
                   소개: {influencer.introduction}
                 </Card.Text>
+                <Button
+                  variant="success"
+                  onClick={() => handleMatch(influencer)}
+                >
+                  매칭 희망 인플루언서로 등록
+                </Button>
               </Card.Body>
             </Card>
           </Col>

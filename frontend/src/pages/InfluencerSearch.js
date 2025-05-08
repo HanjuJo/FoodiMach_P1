@@ -60,6 +60,7 @@ export default function InfluencerSearch() {
               <option value="인스타그램">인스타그램</option>
               <option value="유튜브">유튜브</option>
               <option value="틱톡">틱톡</option>
+
             </Form.Select>
           </Col>
           <Col md={3}>

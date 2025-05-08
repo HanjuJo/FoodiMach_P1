@@ -1,3 +1,4 @@
+
 // src/pages/DashboardOwner.js
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -6,7 +7,10 @@ import {
   query, where, getDocs, addDoc
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { Container, Card, Button, Row, Col, Form } from "react-bootstrap";
+import {
+  Container, Card, Button, Row, Col, Form,
+  Alert, Spinner
+} from "react-bootstrap";
 
 export default function DashboardOwner() {
   const { id } = useParams();
@@ -16,6 +20,9 @@ export default function DashboardOwner() {
   const [region, setRegion] = useState("");
   const [followers, setFollowers] = useState("");
   const [influencers, setInfluencers] = useState([]);
+  const [registeredIds, setRegisteredIds] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchMessage, setSearchMessage] = useState("");
 
   useEffect(() => {
     async function fetchData() {
@@ -29,6 +36,13 @@ export default function DashboardOwner() {
       }
     }
     fetchData();
+    async function fetchRegisteredInfluencers() {
+      const q = query(collection(db, "interestedInfluencers"), where("ownerId", "==", id));
+      const snapshot = await getDocs(q);
+      const ids = snapshot.docs.map(doc => doc.data().influencerId);
+      setRegisteredIds(ids);
+    }
+    fetchRegisteredInfluencers();
   }, [id, navigate]);
 
   const handleEdit = () => navigate(`/edit-owner/${id}`);
@@ -42,41 +56,59 @@ export default function DashboardOwner() {
   };
 
   const handleSearchInfluencers = async () => {
-    let q = query(collection(db, "users"), where("role", "==", "influencer"));
-    const conditions = [];
-    if (platform) conditions.push(where("platform", "==", platform));
-    if (region) conditions.push(where("region", "==", region));
-    if (followers) conditions.push(where("followerCount", ">=", parseInt(followers)));
-    if (conditions.length > 0) {
-      q = query(collection(db, "users"), where("role", "==", "influencer"), ...conditions);
-    }
+    setLoading(true);
+    setSearchMessage("사업주님과 협업을 진행할 인플루언서를 검색중 입니다...");
 
-    const snapshot = await getDocs(q);
-    const result = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    setInfluencers(result);
+    setTimeout(async () => {
+      let q = query(collection(db, "users"), where("role", "==", "influencer"));
+      const conditions = [];
+      if (platform) conditions.push(where("platform", "==", platform));
+      if (region) conditions.push(where("region", "==", region));
+      if (followers) conditions.push(where("followerCount", ">=", parseInt(followers)));
+      if (conditions.length > 0) {
+        q = query(collection(db, "users"), where("role", "==", "influencer"), ...conditions);
+      }
+
+      const snapshot = await getDocs(q);
+      const result = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setInfluencers(result);
+
+      setSearchMessage("✅ 검색 완료!");
+      setLoading(false);
+    }, 1500);
   };
 
   const handleRegisterInterest = async (influencer) => {
-    try {
-      await addDoc(collection(db, "interestedInfluencers"), {
-        ownerId: id,
-        influencerId: influencer.id,
-        influencerName: influencer.influencerName,
-        platform: influencer.platform,
-        region: influencer.region,
-        followerCount: influencer.followerCount,
-        createdAt: new Date()
-      });
-      alert(`'${influencer.influencerName}' 님을 매칭 희망 인플루언서로 등록했습니다.`);
-    } catch (err) {
-      alert("등록 실패: " + err.message);
-    }
-  };
+  try {
+    await addDoc(collection(db, "interestedInfluencers"), {
+      ownerId: id,
+      influencerId: influencer.id,
+      influencerName: influencer.influencerName || "이름없음",
+      platform: influencer.platform || "미입력",
+      region: influencer.region || "미입력",
+      followerCount: influencer.followerCount || 0,
+      createdAt: new Date(),
+    });
+    alert(`'${influencer.influencerName}' 님을 매칭 희망 인플루언서로 등록했습니다.`);
+  } catch (err) {
+    alert("등록 실패: " + err.message);
+  }
+};
 
   if (!data) return <div className="text-center mt-5">불러오는 중...</div>;
 
   return (
     <Container className="py-5">
+      {loading && (
+        <Alert variant="info" className="text-center">
+          <Spinner animation="border" size="sm" className="me-2" />
+          {searchMessage}
+        </Alert>
+      )}
+      {!loading && searchMessage && (
+        <Alert variant="success" className="text-center">{searchMessage}</Alert>
+      )}
+
       <Card className="shadow-lg border-0 rounded-4 p-4" style={{ background: "#fffdf7" }}>
         <h3 className="mb-4 text-warning">{data.shopName} 대시보드</h3>
         <Row className="mb-3">
@@ -154,9 +186,13 @@ export default function DashboardOwner() {
                       지역: {inf.region || "미입력"} <br />
                       소개: {inf.introduction}
                     </Card.Text>
-                    <Button variant="outline-success" onClick={() => handleRegisterInterest(inf)}>
-                      매칭 희망 등록 ✅
-                    </Button>
+                    {registeredIds.includes(inf.id) ? (
+                      <Button variant="success" disabled>등록완료 ✅</Button>
+                    ) : (
+                      <Button variant="outline-success" onClick={() => handleRegisterInterest(inf)}>
+                        매칭 희망 등록 ✅
+                      </Button>
+                    )}
                   </Card.Body>
                 </Card>
               </Col>

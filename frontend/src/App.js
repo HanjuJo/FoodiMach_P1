@@ -12,7 +12,7 @@ import EditInfluencer from "./pages/EditInfluencer";
 import InfluencerSearch from "./pages/InfluencerSearch";
 import BusinessSearch from "./pages/BusinessSearch";
 import RoleBasedNavbar from "./components/RoleBasedNavbar";
-import BidProposalModal from "./pages/BidProposalModal";
+
 
 function App() {
   return (
@@ -31,7 +31,7 @@ function App() {
         <Route path="/edit-influencer/:id" element={<EditInfluencer />} />
         <Route path="/influencer-search" element={<InfluencerSearch />} />
         <Route path="/business-search" element={<BusinessSearch />} />
-        <Route path="/BidProposal-Modal" elment={<BidProposalModal/>}/>
+
 
 
       </Routes>

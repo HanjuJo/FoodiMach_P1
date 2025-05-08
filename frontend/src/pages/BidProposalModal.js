@@ -1,4 +1,3 @@
-// BidProposalModal.js (추가)
 import { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 
@@ -7,6 +6,9 @@ export default function BidProposalModal({ show, onClose, onSubmit }) {
     message: "",
     budget: "",
     duration: "",
+    sns: "",
+    phone: "",
+    concept: "",
   });
 
   const handleChange = (e) => {
@@ -14,7 +16,7 @@ export default function BidProposalModal({ show, onClose, onSubmit }) {
   };
 
   const handleSubmit = () => {
-    onSubmit(form);
+    onSubmit(form); // 상위 컴포넌트에서 Firestore 저장
     onClose();
   };
 
@@ -27,31 +29,27 @@ export default function BidProposalModal({ show, onClose, onSubmit }) {
         <Form>
           <Form.Group className="mb-3">
             <Form.Label>제안 메시지</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              name="message"
-              value={form.message}
-              onChange={handleChange}
-            />
+            <Form.Control as="textarea" rows={3} name="message" value={form.message} onChange={handleChange} />
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label>예산 (₩)</Form.Label>
-            <Form.Control
-              type="number"
-              name="budget"
-              value={form.budget}
-              onChange={handleChange}
-            />
+            <Form.Label>SNS 주소</Form.Label>
+            <Form.Control type="text" name="sns" value={form.sns} onChange={handleChange} />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>전화번호 (비공개)</Form.Label>
+            <Form.Control type="text" name="phone" value={form.phone} onChange={handleChange} />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>제안 비용 (₩)</Form.Label>
+            <Form.Control type="number" name="budget" value={form.budget} onChange={handleChange} />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>희망 기간 (일)</Form.Label>
-            <Form.Control
-              type="number"
-              name="duration"
-              value={form.duration}
-              onChange={handleChange}
-            />
+            <Form.Control type="number" name="duration" value={form.duration} onChange={handleChange} />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>촬영 컨셉</Form.Label>
+            <Form.Control type="text" name="concept" value={form.concept} onChange={handleChange} />
           </Form.Group>
         </Form>
       </Modal.Body>

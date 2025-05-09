@@ -1,114 +1,66 @@
+
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { db, auth } from "../firebaseConfig";
+import { db } from "../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
-import { onAuthStateChanged } from "firebase/auth";
+import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
 
-export default function BusinessSearch() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const initialRegion = location.state?.region || "";
-  const initialCategory = location.state?.category || "";
-
-  const [filters, setFilters] = useState({
-    region: initialRegion,
-    category: initialCategory,
-  });
-
+export default function BusinessSearch({ influencerId }) {
+  const [filters, setFilters] = useState({ region: "", category: "" });
   const [results, setResults] = useState([]);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        navigate("/login");
-      }
-    });
-
-    const handleSearch = async () => {
-      let q = collection(db, "owners");
-      const conditions = [];
-
-      if (filters.region) {
-        conditions.push(where("address", ">=", filters.region));
-      }
-      if (filters.category) {
-        conditions.push(where("category", "==", filters.category));
-      }
-
-      const filteredQuery = conditions.length > 0 ? query(q, ...conditions) : q;
-      const snapshot = await getDocs(filteredQuery);
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setResults(data);
-    };
-
-    handleSearch();
-    return () => unsubscribe();
-  }, [filters, navigate]);
+  const [loading, setLoading] = useState(false);
+  const [searchMessage, setSearchMessage] = useState("");
 
   const handleChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
   const handleSearch = async () => {
-    let q = collection(db, "owners");
-    const conditions = [];
-
-    if (filters.region) {
-      conditions.push(where("address", ">=", filters.region));
-    }
-    if (filters.category) {
-      conditions.push(where("category", "==", filters.category));
-    }
-
-    const filteredQuery = conditions.length > 0 ? query(q, ...conditions) : q;
-    const snapshot = await getDocs(filteredQuery);
-    const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    setResults(data);
+    setLoading(true);
+    setSearchMessage("사업장 정보를 검색중입니다...");
+    setTimeout(async () => {
+      let q = query(collection(db, "owners"));
+      const conditions = [];
+      if (filters.region) conditions.push(where("address", ">=", filters.region));
+      if (filters.category) conditions.push(where("category", "==", filters.category));
+      if (conditions.length > 0) {
+        q = query(collection(db, "owners"), ...conditions);
+      }
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setResults(data);
+      setSearchMessage("검색 완료!");
+      setLoading(false);
+    }, 1000);
   };
 
   return (
-    <Container className="py-4">
-    <p className="mt-5"></p>
-      <h4>🏪 사업장 조건 검색</h4>
-      <Form className="mb-4">
+    <Container className="mt-4">
+      <h5>🔍 사업장 조건 검색</h5>
+      <Form className="mb-3">
         <Row>
           <Col md={5}>
-            <Form.Control
-              name="region"
-              placeholder="지역 (예: 인천)"
-              value={filters.region}
-              onChange={handleChange}
-            />
+            <Form.Control name="region" placeholder="지역" onChange={handleChange} />
           </Col>
           <Col md={5}>
-            <Form.Control
-              name="category"
-              placeholder="업종 (예: 한식, 중식..)"
-              value={filters.category}
-              onChange={handleChange}
-            />
+            <Form.Control name="category" placeholder="업종" onChange={handleChange} />
           </Col>
           <Col md={2}>
-            <Button variant="primary" onClick={handleSearch}>
-              🔍 검색
-            </Button>
+            <Button onClick={handleSearch}>검색</Button>
           </Col>
         </Row>
       </Form>
-
+      {loading && <Alert variant="info"><Spinner animation="border" size="sm" /> {searchMessage}</Alert>}
+      {!loading && searchMessage && <Alert variant="success">{searchMessage}</Alert>}
       <Row>
-        {results.length === 0 && <p>검색 결과가 없습니다.</p>}
         {results.map((shop) => (
           <Col md={4} key={shop.id} className="mb-3">
             <Card>
               <Card.Body>
                 <Card.Title>{shop.shopName}</Card.Title>
                 <Card.Text>
-                  📍 지역: {shop.address} <br />
-                  🏷️ 업종: {shop.category} <br />
-                  👤 사업자: {shop.ownerName} <br />
-                  📝 소개: {shop.description}
+                  주소: {shop.address}<br />
+                  업종: {shop.category}<br />
+                  소개: {shop.description}
                 </Card.Text>
               </Card.Body>
             </Card>

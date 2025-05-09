@@ -42,7 +42,7 @@ export default function EditOwner() {
       const docRef = doc(db, "owners", id);
       await updateDoc(docRef, form);
       alert("✅ 수정이 완료되었습니다!");
-      navigate("/owner-list");
+      navigate(`/dashboard/${id}`);
     } catch (error) {
       console.error("수정 실패:", error);
       alert("❌ 수정 실패. 다시 시도해주세요.");
@@ -108,10 +108,14 @@ export default function EditOwner() {
           />
         </Form.Group>
 
-        <Button variant="primary" type="submit">
-          저장
-        </Button>
-        <Button variant="secondary" className="ms-2" onClick={() => navigate("/owner-list")}>목록으로</Button>
+        <div className="d-flex justify-content-between">
+          <Button variant="primary" type="submit">
+            저장
+          </Button>
+          <Button variant="warning" onClick={() => navigate(`/dashboard/${id}`)}>
+            취소
+          </Button>
+        </div>
       </Form>
     </Container>
   );

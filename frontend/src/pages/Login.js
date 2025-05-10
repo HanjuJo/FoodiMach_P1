@@ -77,7 +77,7 @@ export default function Login() {
 
         <Button
           variant="link"
-          onClick={() => navigate("/register")}
+          onClick={() => navigate("/")}
           className="w-100 mt-2"
         >
           계정이 없으신가요? 회원가입 →

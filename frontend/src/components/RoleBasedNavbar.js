@@ -1,29 +1,33 @@
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth, db } from "../firebaseConfig";
+
 import { useEffect, useState } from "react";
+import { Navbar, Nav, Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { auth, db } from "../firebaseConfig";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
-function Navbar() {
-  const [userInfo, setUserInfo] = useState(null);
+export default function RoleBasedNavbar() {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const uid = user.uid;
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        const uid = currentUser.uid;
 
-        // role 확인
-        const ownerSnap = await getDoc(doc(db, "owners", uid));
-        const influencerSnap = await getDoc(doc(db, "users", uid));
+        const ownerDoc = await getDoc(doc(db, "owners", uid));
+        const influencerDoc = await getDoc(doc(db, "users", uid));
 
-        if (ownerSnap.exists()) {
-          setUserInfo({ uid, role: "owner" });
-        } else if (influencerSnap.exists()) {
-          setUserInfo({ uid, role: "influencer" });
+        if (ownerDoc.exists()) {
+          setRole("owner");
+        } else if (influencerDoc.exists()) {
+          setRole("influencer");
         }
       } else {
-        setUserInfo(null);
+        setUser(null);
+        setRole(null);
       }
     });
 
@@ -32,46 +36,37 @@ function Navbar() {
 
   const handleLogout = async () => {
     await signOut(auth);
-    setUserInfo(null);
-    sessionStorage.clear(); // 혹은 localStorage.clear();
-    navigate("/", { replace: true }); // 뒤로가기 시 로그인 페이지 유지
+    navigate("/");
+  };
+
+  const goToDashboard = () => {
+    if (role === "owner") navigate(`/dashboard/${user.uid}`);
+    if (role === "influencer") navigate(`/dashboard-influencer/${user.uid}`);
   };
 
   return (
-    <nav className="navbar navbar-expand-lg bg-light fixed-top shadow-sm">
-      <div className="container">
-        <a className="navbar-brand" href="/">푸디매치</a>
-        <div className="d-flex">
-          {userInfo ? (
-            <>
-              <button
-                className="btn btn-outline-primary me-2"
-                onClick={() => {
-                  const dashboardPath =
-                    userInfo.role === "owner"
-                      ? `/dashboard/${userInfo.uid}`
-                      : `/dashboard-influencer/${userInfo.uid}`;
-                  navigate(dashboardPath);
-                }}
-              >
-                MyPage
-              </button>
-              <button className="btn btn-outline-danger" onClick={handleLogout}>
-                로그아웃
-              </button>
-            </>
-          ) : (
-            <button
-              className="btn btn-success"
-              onClick={() => navigate("/login")}
-            >
-              로그인
-            </button>
-          )}
-        </div>
-      </div>
-    </nav>
+    <Navbar bg="light" expand="lg" sticky="top" className="shadow-sm">
+      <Container>
+        <Navbar.Brand onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
+          <strong>푸디매치 🍽️</strong>
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="role-navbar" />
+        <Navbar.Collapse id="role-navbar">
+          <Nav className="ms-auto">
+            {!user ? (
+              <>
+                <Nav.Link onClick={() => navigate("/login")}>로그인</Nav.Link>
+                <Nav.Link onClick={() => navigate("/")}>회원가입</Nav.Link>
+              </>
+            ) : (
+              <>
+                <Nav.Link onClick={goToDashboard}>마이페이지</Nav.Link>
+                <Nav.Link onClick={handleLogout}>로그아웃</Nav.Link>
+              </>
+            )}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 }
-
-export default Navbar;

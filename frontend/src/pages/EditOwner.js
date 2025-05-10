@@ -7,12 +7,14 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 export default function EditOwner() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     ownerName: "",
     shopName: "",
     category: "",
     address: "",
     description: "",
+    phone: "", // ✅ 전화번호 필드 추가
   });
 
   useEffect(() => {
@@ -21,7 +23,15 @@ export default function EditOwner() {
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        setForm(docSnap.data());
+        const data = docSnap.data();
+        setForm({
+          ownerName: data.ownerName || "",
+          shopName: data.shopName || "",
+          category: data.category || "",
+          address: data.address || "",
+          description: data.description || "",
+          phone: data.phone || "", // ✅ 기본값 추가
+        });
       } else {
         alert("해당 사업자를 찾을 수 없습니다.");
         navigate("/owner-list");
@@ -105,6 +115,18 @@ export default function EditOwner() {
             name="description"
             value={form.description}
             onChange={handleChange}
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3" controlId="phone">
+          <Form.Label>전화번호</Form.Label>
+          <Form.Control
+            type="tel"
+            name="phone"
+            placeholder="예: 010-1234-5678"
+            value={form.phone}
+            onChange={handleChange}
+            required
           />
         </Form.Group>
 

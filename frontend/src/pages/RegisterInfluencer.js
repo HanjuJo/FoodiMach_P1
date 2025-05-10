@@ -1,21 +1,29 @@
-// src/pages/RegisterInfluencer.js
+
 import { useState } from "react";
-import { Form, Button, Container } from "react-bootstrap";
+import { Container, Form, Button, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { collection, addDoc, doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../firebaseConfig";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 export default function RegisterInfluencer() {
   const navigate = useNavigate();
+  const auth = getAuth();
+
   const [form, setForm] = useState({
     email: "",
     password: "",
+    passwordConfirm: "",
     influencerName: "",
     platform: "",
     followerCount: "",
+    region: "",
     introduction: "",
+    snsLink: "",
+    phone: "",
   });
+
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,6 +31,12 @@ export default function RegisterInfluencer() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    if (form.password !== form.passwordConfirm) {
+      setError("비밀번호가 일치하지 않습니다.");
+      return;
+    }
 
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -33,23 +47,30 @@ export default function RegisterInfluencer() {
       const user = userCredential.user;
 
       await setDoc(doc(db, "users", user.uid), {
-  uid: user.uid,
-  role: "influencer",
-  ...form
-});
+        influencerName: form.influencerName,
+        platform: form.platform,
+        followerCount: parseInt(form.followerCount),
+        region: form.region,
+        introduction: form.introduction,
+        snsLink: form.snsLink,
+        phone: form.phone,
+        email: form.email,
+        role: "influencer",
+        createdAt: new Date(),
+      });
 
-      alert("🎉 인플루언서 가입 완료! 로그인해주세요.");
-      navigate("/login");
-    } catch (error) {
-      console.error("가입 오류:", error);
-      alert("❌ 가입 실패: " + error.message);
+      alert("✅ 인플루언서 등록이 완료되었습니다!");
+      navigate(`/dashboard-influencer/${user.uid}`);
+    } catch (err) {
+      console.error(err);
+      setError("회원가입에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
   return (
     <Container className="mt-5" style={{ maxWidth: "600px" }}>
-    <br></br>
-      <h3 className="mb-4">🎥 인플루언서 회원가입</h3>
+      <h3 className="mb-4">📸 인플루언서 회원가입</h3>
+      {error && <Alert variant="danger">{error}</Alert>}
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">
           <Form.Label>이메일</Form.Label>
@@ -74,7 +95,18 @@ export default function RegisterInfluencer() {
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>이름 또는 채널명</Form.Label>
+          <Form.Label>비밀번호 확인</Form.Label>
+          <Form.Control
+            type="password"
+            name="passwordConfirm"
+            value={form.passwordConfirm}
+            onChange={handleChange}
+            required
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>이름</Form.Label>
           <Form.Control
             type="text"
             name="influencerName"
@@ -85,38 +117,77 @@ export default function RegisterInfluencer() {
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>SNS 플랫폼 (예: 인스타그램)</Form.Label>
-          <Form.Control
-            type="text"
+          <Form.Label>📱 플랫폼</Form.Label>
+          <Form.Select
             name="platform"
             value={form.platform}
             onChange={handleChange}
-          />
+            required
+          >
+            <option value="">선택하세요</option>
+            <option value="인스타그램">인스타그램</option>
+            <option value="유튜브">유튜브</option>
+            <option value="틱톡">틱톡</option>
+          </Form.Select>
         </Form.Group>
 
         <Form.Group className="mb-3">
           <Form.Label>팔로워 수</Form.Label>
           <Form.Control
-            type="text"
+            type="number"
             name="followerCount"
             value={form.followerCount}
+            onChange={handleChange}
+            required
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>지역</Form.Label>
+          <Form.Control
+            type="text"
+            name="region"
+            value={form.region}
             onChange={handleChange}
           />
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>자기소개</Form.Label>
+          <Form.Label>소개</Form.Label>
           <Form.Control
             as="textarea"
-            rows={2}
+            rows={3}
             name="introduction"
             value={form.introduction}
             onChange={handleChange}
           />
         </Form.Group>
 
-        <Button variant="success" type="submit" className="w-100">
-          시작하기 🚀
+        <Form.Group className="mb-3">
+          <Form.Label>SNS 주소</Form.Label>
+          <Form.Control
+            type="url"
+            name="snsLink"
+            placeholder="https://instagram.com/..."
+            value={form.snsLink}
+            onChange={handleChange}
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>전화번호</Form.Label>
+          <Form.Control
+            type="tel"
+            name="phone"
+            placeholder="010-1234-5678"
+            value={form.phone}
+            onChange={handleChange}
+            required
+          />
+        </Form.Group>
+
+        <Button variant="primary" type="submit" className="w-100">
+          등록 완료
         </Button>
       </Form>
     </Container>
